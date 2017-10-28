@@ -1,0 +1,15 @@
+{
+"name": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+"data": ["levels/0.pop","levels/1.pop","levels/2.pop","levels/3.pop","levels/4.pop","levels/5.pop","levels/6.pop","levels/7.pop","levels/8.pop","levels/9.pop","levels/10.pop","levels/11.pop","levels/12.pop","levels/13.pop","levels/14.pop","levels/15.pop"], 
+"numVertices": "208353",
+"xmin": -77.8495,
+"ymin": -77.1668,
+"zmin": -60.3366,
+"xmax": 77.8495,
+"ymax": 77.1668,
+"zmax": 60.3367,
+"factor": 65535,
+"levelCount": 16,
+"levels": [36,300,1386,5757,22155,78444,189888,208221,208347,208353,208353,208353,208353,208353,208353,208353],
+"alpha": 1
+}

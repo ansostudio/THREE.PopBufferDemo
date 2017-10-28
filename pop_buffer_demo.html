@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>three.js webgl - pop buffers</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                margin: 0px;
+                background-color: #000000;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+
+        <script src="./js/three.js"></script>
+        <script src="./js/orbitcontrols.js"></script>
+        <script src="./js/loader.js"></script>
+        <script src="./js/popgeometry.js"></script>
+
+        <script>
+
+            var camera, scene, renderer;
+            var controls;
+            var popLoader = new POPLoader();
+            var popGeometry = null;
+            var timeOutIds = [];
+            var clearTimeouts = () => {
+                timeOutIds.forEach( ( timeOutId ) => {
+                    clearTimeout( timeOutId );
+                });
+                timeOutIds = [];
+            }
+            this.onKeyDown = ( event ) => {
+                var key = event.key;
+                var loadPopLevel = ( j, offset = j ) => {
+                    var timeOutId = setTimeout( () => {
+                       popGeometry.setLevel( j );
+                   }, 100 * offset )
+                    timeOutIds.push( timeOutId );
+                }
+                if( key === 's' ) {
+                    clearTimeouts();
+                    var currentLevel = popGeometry.getLevel();
+                    var maxLevel = popGeometry.getMaxLevel();
+                    for( var i = currentLevel+1; i < maxLevel; i++ ) {
+                        loadPopLevel( i );
+                    }
+                }
+                else if( key === 'h' ) {
+                    clearTimeouts();
+                    var currentLevel = popGeometry.getLevel();
+                    for( var i = currentLevel-1; i >= 0; i-- ) {
+                        loadPopLevel( i, currentLevel - i );
+                    }
+                }
+            };
+            window.addEventListener(
+                'keydown',
+                this.onKeyDown,
+                false
+            );
+            popLoader.load( 
+                './data/popgeometry/model.json',
+                ( json ) => {
+                    var webgl_context = init( json );
+                    popGeometry = new PopGeometry( webgl_context );
+                    popGeometry.init( json );
+                    scene.add( popGeometry.getGeometry() );
+                },
+                ( data, level ) => {
+                    console.log( 'Loading level : ' +level );
+                    popGeometry.updateData( data, level );
+                }
+            );
+
+            //init( json );
+            animate();
+
+            function init( json ) {
+                camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.InnerHeight, 1, 10 );
+                camera.aspect = window.innerWidth / window.innerHeight;
+
+                var w = Math.max( json.xmax - json.xmin, json.ymax - json.ymin );
+                var largeness = Math.max( w, json.zmax - json.zmin );
+                var alpha = 60; 
+                var degToRad = ( degrees ) => { return degrees * Math.PI / 180 };
+                var d = ( w / 2 ) / Math.tan( degToRad( alpha / 2 ) ) + ( json.zmax - json.zmin ) / 2 + 0.5 * w;
+
+                camera.position.z = d;
+                camera.position.y = 10 ; 
+                camera.near = 1;
+                camera.far = largeness * 5.0;
+                camera.updateProjectionMatrix();
+
+                scene = new THREE.Scene();
+                var directionalLightTop = new THREE.DirectionalLight( new THREE.Color( .9, .9, .9 ), .8 );
+                scene.add( directionalLightTop );
+                var ambientHighlight = new THREE.AmbientLight( new THREE.Color( .7, .7, .7 ), 1.0 );
+                scene.add( ambientHighlight );
+
+
+                renderer = new THREE.WebGLRenderer( { antialias: true } );
+                renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                document.body.appendChild( renderer.domElement );
+
+                controls = new THREE.OrbitControls( camera, renderer.domElement );
+                controls.rotateSpeed = .4; 
+                controls.zoomSpeed = .25;
+                controls.minDistance = 40; 
+                controls.maxDistance = 400;
+                controls.minPanX = json.xmin * .8; 
+                controls.maxPanX = json.xmax * .8; 
+                controls.minPanZ = json.zmin * .8; 
+                controls.maxPanZ = json.zmax * .8; 
+                camera.minDistance = controls.minDistance;
+                camera.maxDistance = controls.maxDistance;
+
+                controls.enableZoom = true;
+                controls.enablePan = true;
+                controls.autoRotate = true;
+
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.9;
+
+                controls.keys = [ 65, 83, 68 ];
+                controls.minPolarAngle = 0;
+                controls.maxPolarAngle = Math.PI * 0.48;
+
+                //
+
+                window.addEventListener( 'resize', onWindowResize, false );
+
+                return renderer.context;
+            }
+
+            function onWindowResize() {
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize( window.innerWidth, window.innerHeight );
+
+            }
+
+            function animate() {
+
+                requestAnimationFrame( animate );
+                if( renderer )
+                    renderer.render( scene, camera );
+                if( controls )
+                    controls.update();
+
+            }
+
+        </script>
+
+    </body>
+</html>
