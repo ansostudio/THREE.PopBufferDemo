@@ -1,3 +1,3 @@
 # THREE.PopBufferDemo
 
-![alt text](./data/gifs/bunny_color.pop.gif)
+![alt text](./data/gifs/bunny_color_pop.gif)
